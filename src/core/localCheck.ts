@@ -27,7 +27,6 @@ export function parseLocalStatus(output: string): { registered: boolean | null; 
 
 /** Strip ANSI colour codes the interfold CLI prints on errors. */
 export function stripAnsi(text: string): string {
-  // eslint-disable-next-line no-control-regex
   return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
