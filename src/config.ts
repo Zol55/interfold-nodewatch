@@ -1,6 +1,8 @@
 import type { Address } from 'viem';
 import { isAddress } from 'viem';
 import type { ChainName } from './chain/addresses.js';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 export const DEFAULT_RPC_URL = 'https://ethereum-rpc.publicnode.com';
 export const DEFAULT_POLL_INTERVAL_SECONDS = 60;
@@ -32,8 +34,36 @@ function parseChain(value: string | undefined): ChainName {
   return 'mainnet';
 }
 
-/** CLI flags always win over environment variables. */
+/**
+ * Minimal .env loader (KEY=value lines, # comments, optional quotes). Values
+ * already present in the real environment are never overridden, so a shell
+ * export or a systemd Environment= line always wins over the file. No
+ * dependency on dotenv on purpose -- this is all the tool needs.
+ */
+export function loadDotEnv(path = resolve(process.cwd(), '.env'), env: NodeJS.ProcessEnv = process.env): number {
+  if (!existsSync(path)) return 0;
+  let loaded = 0;
+  for (const rawLine of readFileSync(path, 'utf8').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq <= 0) continue;
+    const key = line.slice(0, eq).trim().replace(/^export\s+/, '');
+    let value = line.slice(eq + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (env[key] === undefined) {
+      env[key] = value;
+      loaded += 1;
+    }
+  }
+  return loaded;
+}
+
+/** CLI flags always win over environment variables, which win over .env. */
 export function resolveConfig(overrides: ConfigOverrides = {}): ResolvedConfig {
+  loadDotEnv();
   const rpcUrl = overrides.rpcUrl ?? process.env.RPC_URL ?? DEFAULT_RPC_URL;
   const chain = parseChain(overrides.chain ?? process.env.CHAIN);
 
