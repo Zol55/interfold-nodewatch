@@ -1,0 +1,68 @@
+{
+  "name": "interfold-nodewatch",
+  "version": "0.1.0",
+  "description": "Status, watch, Prometheus exporter and E3 inspector CLI for Interfold ciphernode operators",
+  "keywords": [
+    "interfold",
+    "ciphernode",
+    "fhe",
+    "ethereum",
+    "prometheus",
+    "cli",
+    "node-operator"
+  ],
+  "homepage": "https://github.com/Zol55/interfold-nodewatch#readme",
+  "bugs": {
+    "url": "https://github.com/Zol55/interfold-nodewatch/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zol55/interfold-nodewatch.git"
+  },
+  "license": "MIT",
+  "author": "Tom Teilors <tomteilors@gmail.com>",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "nodewatch": "dist/cli.js",
+    "interfold-nodewatch": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "grafana",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "prom-client": "^15.1.3",
+    "viem": "^2.56.0"
+  },
+  "optionalDependencies": {
+    "@interfold/sdk": "^0.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "eslint": "^10.0.0",
+    "tsx": "^4.23.0",
+    "typescript": "~6.0.0",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "ws": "^8.21.3"
+  }
+}
