@@ -17,19 +17,6 @@ Ciphernode operators post a FOLD bond and hold tFOLD tickets to participate in I
 ## Install
 
 ```bash
-npx interfold-nodewatch status --operator 0xYourOperatorAddress
-```
-
-or install globally:
-
-```bash
-npm install -g interfold-nodewatch
-nodewatch status --operator 0xYourOperatorAddress
-```
-
-or clone and run from source:
-
-```bash
 git clone https://github.com/Zol55/interfold-nodewatch.git
 cd interfold-nodewatch
 npm install
@@ -37,6 +24,8 @@ npm run build
 cp .env.example .env   # fill in OPERATOR_ADDRESS at least
 node dist/cli.js status
 ```
+
+Optionally link it as a global command: `npm link` (then `nodewatch status ...` works from anywhere). Publishing to npm is on the roadmap.
 
 Node.js >= 20 is required. No pnpm/yarn assumptions -- npm only.
 
@@ -159,7 +148,7 @@ open http://localhost:3000  # Grafana, anonymous viewer access enabled; the
 
 This starts the exporter, Prometheus (scraping it every 30s), and Grafana (provisioned with a Prometheus datasource and the dashboard in [`grafana/dashboard.json`](grafana/dashboard.json)).
 
-![grafana dashboard](docs/grafana.png)
+The dashboard has panels for registration/active state, bond, tickets and network share, requestsPaused, E3 counts by stage, RPC health and the release/update gauges (see [`grafana/dashboard.json`](grafana/dashboard.json)).
 
 ### `nodewatch e3 <id>`
 
@@ -252,6 +241,7 @@ npm run build
 
 ## Roadmap
 
+- Publish to npm (`npx interfold-nodewatch`)
 - WebSocket subscriptions for `watch` as an opt-in alternative to polling
 - `nodewatch e3 --watch <id>` to follow one E3's lifecycle live
 - Multi-operator support (`--operator` accepting a comma-separated list) for operators running several nodes
