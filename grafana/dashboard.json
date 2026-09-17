@@ -1,0 +1,140 @@
+{
+  "title": "Interfold Nodewatch",
+  "uid": "interfold-nodewatch",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "tags": ["interfold", "ciphernode"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Registered",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "targets": [{ "expr": "interfold_operator_registered", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "NO", "color": "red" }, "1": { "text": "YES", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Active",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "targets": [{ "expr": "interfold_operator_active", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "NO", "color": "red" }, "1": { "text": "YES", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Bond (FOLD)",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "targets": [{ "expr": "interfold_operator_bond_fold", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Tickets",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "targets": [{ "expr": "interfold_operator_tickets", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Ticket share",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "targets": [{ "expr": "interfold_ticket_share", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "RPC up",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "targets": [{ "expr": "interfold_rpc_up", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Bond & tickets over time",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "interfold_operator_bond_fold", "legendFormat": "Bond (FOLD)", "refId": "A" },
+        { "expr": "interfold_operator_tickets * 1000", "legendFormat": "Tickets x1000 (scaled to overlay)", "refId": "B" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Ticket share of network (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [{ "expr": "interfold_ticket_share", "legendFormat": "Our share", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Requests paused",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 12 },
+      "targets": [{ "expr": "interfold_requests_paused", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "NO", "color": "green" }, "1": { "text": "YES", "color": "orange" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "E3 total",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 12 },
+      "targets": [{ "expr": "interfold_e3_total", "refId": "A" }]
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Last block",
+      "gridPos": { "h": 4, "w": 6, "x": 8, "y": 12 },
+      "targets": [{ "expr": "interfold_last_block", "refId": "A" }]
+    },
+    {
+      "id": 12,
+      "type": "bargauge",
+      "title": "E3 by stage",
+      "gridPos": { "h": 8, "w": 10, "x": 14, "y": 12 },
+      "targets": [{ "expr": "interfold_e3_by_stage", "legendFormat": "{{stage}}", "refId": "A" }]
+    }
+  ]
+}
