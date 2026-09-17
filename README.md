@@ -197,7 +197,7 @@ It deliberately does not use GitHub's `GET /repos/{repo}/releases/latest` endpoi
 
 ## About `@interfold/sdk`
 
-This project lists [`@interfold/sdk`](https://www.npmjs.com/package/@interfold/sdk) as an **optional** dependency and it is skipped by default (see [`.npmrc`](.npmrc)). The SDK is the "correct" way to talk to Interfold for anything involving FHE (encrypting inputs, generating proofs, requesting E3s), but for a read-only status tool it pulls in a lot that isn't needed:
+This project deliberately does **not** depend on [`@interfold/sdk`](https://www.npmjs.com/package/@interfold/sdk). The SDK is the "correct" way to talk to Interfold for anything involving FHE (encrypting inputs, generating proofs, requesting E3s), but for a read-only status tool it pulls in a lot that isn't needed:
 
 - `@aztec/bb.js` (Barretenberg, a WASM proving backend) and `@noir-lang/noir_js` -- multi-megabyte FHE/proving toolchain
 - a `git+ssh://git@github.com/...` transitive dependency (`era-contracts`), which fails to install in most CI runners and sandboxes that don't have an SSH key provisioned for GitHub

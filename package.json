@@ -50,9 +50,6 @@
     "prom-client": "^15.1.3",
     "viem": "^2.56.0"
   },
-  "optionalDependencies": {
-    "@interfold/sdk": "^0.15.0"
-  },
   "devDependencies": {
     "@types/node": "^22.20.0",
     "@typescript-eslint/eslint-plugin": "^8.70.0",
