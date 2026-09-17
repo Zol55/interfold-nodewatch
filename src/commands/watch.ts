@@ -5,7 +5,7 @@ import { fetchFullStatus } from '../core/status.js';
 import { loadState, saveState } from '../core/state.js';
 import { diffSnapshots, rpcFailureAlert, type Alert, type WatchSnapshot } from '../core/alerts.js';
 import { scanEventAlerts } from '../core/events.js';
-import { checkLocalAgainstChain } from '../core/localCheck.js';
+import { isLocalCheckDue, localProblemAlerts, probeLocal } from '../core/localCheck.js';
 import { fetchLatestRelease, getLocalVersion } from '../core/release.js';
 import { checkNewReleaseAlert, checkUpdateAvailableAlert } from '../core/releaseAlerts.js';
 import { sendTelegramMessage } from '../notify/telegram.js';
@@ -17,11 +17,13 @@ export interface WatchCommandOptions {
   chain?: string;
   state?: string;
   local?: boolean;
+  localCheckInterval?: string;
   once?: boolean;
   releaseCheckInterval?: string;
 }
 
 const RPC_FAILURE_THRESHOLD = 3;
+const DEFAULT_LOCAL_CHECK_MINUTES = 10;
 
 interface SnapshotFields {
   report: Awaited<ReturnType<typeof fetchFullStatus>>;
@@ -30,6 +32,8 @@ interface SnapshotFields {
   releaseLatestTag: string | null;
   releaseLastAlertedVersion: string | null;
   releaseLastCheckedAt: string | null;
+  localLastCheckedAt?: string | null;
+  localLastProblem?: string | null;
 }
 
 function toSnapshot(fields: SnapshotFields): WatchSnapshot {
@@ -46,6 +50,8 @@ function toSnapshot(fields: SnapshotFields): WatchSnapshot {
     releaseLatestTag: fields.releaseLatestTag,
     releaseLastAlertedVersion: fields.releaseLastAlertedVersion,
     releaseLastCheckedAt: fields.releaseLastCheckedAt,
+    localLastCheckedAt: fields.localLastCheckedAt ?? null,
+    localLastProblem: fields.localLastProblem ?? null,
   };
 }
 
@@ -141,6 +147,7 @@ export async function runWatch(options: WatchCommandOptions): Promise<void> {
     releaseCheckMinutes: options.releaseCheckInterval ? Number(options.releaseCheckInterval) : undefined,
   });
   const operator = requireOperator(config);
+  const localCheckMinutes = options.localCheckInterval ? Number(options.localCheckInterval) : DEFAULT_LOCAL_CHECK_MINUTES;
   const addresses = CONTRACT_ADDRESSES[config.chain];
   const client = createClient(config.rpcUrl, config.chain);
   const statePath = options.state ?? 'state.json';
@@ -203,8 +210,13 @@ export async function runWatch(options: WatchCommandOptions): Promise<void> {
         if (recovered) alerts.push(recovered);
       }
 
-      if (options.local) {
-        alerts.push(...(await checkLocalAgainstChain(report.operator.registered, report.operator.active)));
+      let localLastCheckedAt = prev?.localLastCheckedAt ?? null;
+      let localLastProblem = prev?.localLastProblem ?? null;
+      if (options.local && isLocalCheckDue(localLastCheckedAt, localCheckMinutes)) {
+        const problem = await probeLocal(report.operator.registered, report.operator.active);
+        alerts.push(...localProblemAlerts(localLastProblem, problem));
+        localLastProblem = problem;
+        localLastCheckedAt = new Date().toISOString();
       }
 
       const releaseCheck = await maybeCheckRelease(prev, config.releaseCheckMinutes);
@@ -220,6 +232,8 @@ export async function runWatch(options: WatchCommandOptions): Promise<void> {
           releaseLatestTag: releaseCheck.releaseLatestTag,
           releaseLastAlertedVersion: releaseCheck.releaseLastAlertedVersion,
           releaseLastCheckedAt: releaseCheck.releaseLastCheckedAt,
+          localLastCheckedAt,
+          localLastProblem,
         }),
       );
     } catch (err) {

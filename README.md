@@ -102,7 +102,7 @@ It alerts on:
 - The RPC endpoint failing 3 polls in a row (and recovering)
 - A new interfold release appearing on GitHub, and your local `interfold` binary falling behind it (checked every `--release-check-interval` minutes, default 60 -- see [Release tracking](#release-tracking))
 
-Add `--local` to also run `interfold ciphernode status` on the same machine and alert if that command fails, or if its reported Registered/Active disagrees with the chain -- useful as a sanity check that your local ciphernode process and its on-chain state agree. This is best-effort: the exact output format of that command isn't publicly documented, so nodewatch looks for `Registered`/`Active` followed by a boolean-ish token and otherwise stays quiet about it.
+Add `--local` to also run `interfold ciphernode status` on the same machine and alert if that command fails, or if its reported Registered/Active disagrees with the chain -- useful as a sanity check that your local ciphernode process and its on-chain state agree. This is best-effort: the exact output format of that command isn't publicly documented, so nodewatch looks for `Registered`/`Active` followed by a boolean-ish token and otherwise stays quiet about it. The status command makes several RPC calls through your node's own `rpc_url`, so it runs only every `--local-check-interval` minutes (default 10), and a problem is reported once when it appears and once when it clears -- not every tick. A typical thing it catches: the node's RPC provider rate-limiting (`HTTP error 429 ... rate limit exceeded`) while the on-chain state is still fine.
 
 ### `nodewatch exporter`
 

@@ -25,44 +25,56 @@ export function parseLocalStatus(output: string): { registered: boolean | null; 
   };
 }
 
-/**
- * Runs `interfold ciphernode status` locally and compares it against the
- * on-chain values already fetched for this tick. Alerts if the command
- * fails outright, or if it reports a Registered/Active value that
- * disagrees with the chain.
- */
-export async function checkLocalAgainstChain(
-  onChainRegistered: boolean,
-  onChainActive: boolean,
-): Promise<Alert[]> {
-  const alerts: Alert[] = [];
+/** Strip ANSI colour codes the interfold CLI prints on errors. */
+export function stripAnsi(text: string): string {
+  // eslint-disable-next-line no-control-regex
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
+}
 
+/**
+ * Runs `interfold ciphernode status` and compares it against the on-chain
+ * values already fetched for this tick. Returns a one-line problem
+ * description, or null when everything agrees.
+ */
+export async function probeLocal(onChainRegistered: boolean, onChainActive: boolean): Promise<string | null> {
   let stdout: string;
   try {
-    const result = await execAsync('interfold ciphernode status', { timeout: 15_000 });
+    const result = await execAsync('interfold ciphernode status', { timeout: 60_000 });
     stdout = result.stdout;
   } catch (err) {
-    alerts.push({
-      severity: 'critical',
-      message: `--local: \`interfold ciphernode status\` failed: ${err instanceof Error ? err.message : String(err)}`,
-    });
-    return alerts;
+    const raw = err instanceof Error ? err.message : String(err);
+    const msg = stripAnsi(raw).replace(/\s+/g, ' ').trim();
+    return `\`interfold ciphernode status\` failed: ${msg}`;
   }
 
   const local = parseLocalStatus(stdout);
-
+  const problems: string[] = [];
   if (local.registered !== null && local.registered !== onChainRegistered) {
-    alerts.push({
-      severity: 'critical',
-      message: `--local: local Registered=${local.registered} disagrees with chain Registered=${onChainRegistered}`,
-    });
+    problems.push(`local Registered=${local.registered} disagrees with chain Registered=${onChainRegistered}`);
   }
   if (local.active !== null && local.active !== onChainActive) {
-    alerts.push({
-      severity: 'critical',
-      message: `--local: local Active=${local.active} disagrees with chain Active=${onChainActive}`,
-    });
+    problems.push(`local Active=${local.active} disagrees with chain Active=${onChainActive}`);
   }
+  return problems.length ? problems.join('; ') : null;
+}
 
-  return alerts;
+/**
+ * Pure alert rule for the local check: alert when a problem appears or
+ * changes, and once more when it clears. The same problem repeating tick
+ * after tick stays silent -- the operator already knows.
+ */
+export function localProblemAlerts(previousProblem: string | null, currentProblem: string | null): Alert[] {
+  if (previousProblem === currentProblem) return [];
+  if (currentProblem !== null) {
+    return [{ severity: 'critical', message: `--local: ${currentProblem}` }];
+  }
+  return [{ severity: 'info', message: '--local: `interfold ciphernode status` agrees with the chain again' }];
+}
+
+/** Is it time to run the (RPC-hungry) local status command again? */
+export function isLocalCheckDue(lastCheckedAt: string | null | undefined, intervalMinutes: number, now = Date.now()): boolean {
+  if (!lastCheckedAt) return true;
+  const last = Date.parse(lastCheckedAt);
+  if (Number.isNaN(last)) return true;
+  return now - last >= intervalMinutes * 60_000;
 }

@@ -16,6 +16,9 @@ export interface WatchSnapshot {
   releaseLatestTag?: string | null;
   releaseLastAlertedVersion?: string | null;
   releaseLastCheckedAt?: string | null;
+  /** --local: last time `interfold ciphernode status` was run, and the problem it reported (null = healthy). */
+  localLastCheckedAt?: string | null;
+  localLastProblem?: string | null;
 }
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';

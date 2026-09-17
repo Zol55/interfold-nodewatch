@@ -33,6 +33,10 @@ program
   .option('--chain <name>', 'mainnet | sepolia (defaults to CHAIN env)')
   .option('--state <path>', 'state file path (default ./state.json)')
   .option('--local', 'also run `interfold ciphernode status` and cross-check it against the chain')
+  .option(
+    '--local-check-interval <minutes>',
+    'how often --local runs the status command (it makes several RPC calls; default 10)',
+  )
   .option('--once', 'poll a single time and exit (mainly for testing)')
   .option(
     '--release-check-interval <minutes>',
